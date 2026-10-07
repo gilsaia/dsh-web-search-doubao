@@ -55,6 +55,10 @@ dsh plugin --profile web add /path/to/dsh-web-search-doubao
 
 `fetchProvider` 必须一并重写：行补丁是**整体替换**目标行的 `config`，漏掉它会把 fetch provider 一起清空，导致 `web_fetch` 失效。
 
+> **关于安装时的 `Issues with peer dependencies found` 警告**：这是预期内的。本插件 import 的
+> `@deepseek-ai/dsh-*` 包由 Harness 自身在加载时提供，并不会装进 profile，因此 pnpm 会把它们报成缺失的
+> peer。Harness 挂载插件时会自行解析它们。
+
 装完后重启 Harness（或重新加载 profile），然后发起一次搜索即可。
 
 ## 提供密钥

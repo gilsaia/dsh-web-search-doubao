@@ -71,6 +71,11 @@ bundle list, and its patch selects this provider:
 `fetchProvider` is restated because a row patch **replaces** the targeted row's whole
 `config`; omitting it would unset the fetch provider and break `web_fetch`.
 
+> **About the `Issues with peer dependencies found` warning:** it is expected. The
+> `@deepseek-ai/dsh-*` packages this plugin imports are provided by the harness itself
+> at load time rather than installed into the profile, so pnpm reports them as missing
+> peers. The harness resolves them when it mounts the plugin.
+
 Restart the harness afterwards (or reload the profile), then run a search.
 
 ## Provide the key
