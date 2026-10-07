@@ -61,7 +61,17 @@ dsh plugin --profile web add /path/to/dsh-web-search-doubao
 
 装完后重启 Harness（或重新加载 profile），然后发起一次搜索即可。
 
-## 提供密钥
+## 在前端配置（推荐）
+
+插件带**客户端半**。重启一次后，Harness 设置侧边栏会多出一个 **联网搜索** 页，下面所有配置都能在这里完成：
+
+- **API Key** —— 密码框输入，通过 Harness 凭据域写入表单所指的引用名。**明文不会进入设置文件**，页面只知道密钥"是否已配置"。
+- **全部配置项** —— 端点、搜索类型、结果条数、时间范围、权威过滤、Query 改写、摘要开关。改过的字段标 **未保存**；被用户层覆盖的字段标 **已覆盖** 并提供一键 **恢复默认**。
+- **保存** 提交一次带版本栅栏的写入；**撤销** 丢弃未保存的改动。
+
+保存后**下一次搜索即生效**，配置和密钥都无需重启。该页面只在宿主提供 `web-search-doubao` 命名空间时挂载，没装插件的部署看不到任何痕迹。
+
+## 不用前端时怎么提供密钥
 
 插件**要求提供密钥**，解析顺序为：
 
@@ -81,6 +91,8 @@ export ARK_API_KEY=...        # 然后启动 Harness
   config:
     apiKey: '...'             # 这是密钥；更推荐 apiKeyEnv，避免密钥进入配置文件
 ```
+
+> 如果 profile 补丁文件还是出厂默认内容，里面有一行空的 `[]`。**要把 `[]` 换成你的条目** —— 直接在它后面追加 `- id:` 会让文件变成两个 YAML 文档，Harness 会拒绝解析该 overlay。
 
 密钥缺失时搜索会以 `WEB_PROVIDER_CREDENTIAL_MISSING` 失败，并明确指出查过哪个引用名 —— 不会静默返回零结果。
 
@@ -135,6 +147,7 @@ dsh --profile web --dump-config | grep -A4 'id: web$'
 
 - `provider.js` —— `DoubaoSearchProvider`，负责 wire format、结果映射与错误翻译。使用原生 `fetch`，**不经过** `ctx.llm`。
 - `index.js` —— Cordis 插件本体：`name`、`inject: ['web']`、`Config` schema 与 `apply()`，后者把 provider 注册进接缝。
+- `client/client.js` —— 浏览器半，通过 `dsh.client` 声明、由宿主在 `/plugins` 下服务。按加载器的 client-bundle 外壳手写，**无需构建**，只依赖平台提供的 `react`。所有读写都走文档化的 Remote 命名空间（`settings.describe` / `settings.mutate` / `credentials.describe` / `credentials.set`）。
 - `cordis.patch.yml` —— 挂载插件并选中它的 bundle 补丁。
 
 两个如果要 fork 值得注意的细节：

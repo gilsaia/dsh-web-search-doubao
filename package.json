@@ -1,6 +1,6 @@
 {
   "name": "dsh-web-search-doubao",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Doubao Search (Volcengine) web search provider for DeepSeek Harness — registers into the ctx.web seam so the standard web_search tool returns real excerpts.",
   "type": "module",
   "main": "index.js",
@@ -10,6 +10,7 @@
       "types": "./index.d.ts",
       "default": "./index.js"
     },
+    "./client": "./client/client.js",
     "./provider": {
       "types": "./provider.d.ts",
       "default": "./provider.js"
@@ -22,6 +23,7 @@
     "index.d.ts",
     "provider.js",
     "provider.d.ts",
+    "client/client.js",
     "cordis.patch.yml",
     "scripts",
     "README.md",
@@ -35,6 +37,13 @@
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-settings",
+        "@deepseek-ai/dsh-api-remotes"
+      ]
     }
   },
   "peerDependencies": {

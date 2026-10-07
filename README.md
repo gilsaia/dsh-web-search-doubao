@@ -78,7 +78,24 @@ bundle list, and its patch selects this provider:
 
 Restart the harness afterwards (or reload the profile), then run a search.
 
-## Provide the key
+## Configure it in the GUI
+
+The plugin ships a **client half**. After one restart it adds a **联网搜索 (Web search)**
+page to the harness settings sidebar, and everything below can be done there:
+
+- **API Key** — typed into a password field and written through the harness credentials
+  domain under the reference the form names. The literal never enters a settings file,
+  and the page only learns whether a key is *configured*, not what it is.
+- **Every config field** — endpoint, search type, result count, time range, authority
+  filter, query rewriting, summary toggle. Fields you changed show **未保存**; fields the
+  user layer overrides show **已覆盖** with a one-click **恢复默认**.
+- **Save** applies one revision-fenced write; **撤销** discards the staged edits.
+
+A save takes effect on the next search — no restart needed for either the config or the
+key. The page mounts only while the host serves the `web-search-doubao` settings
+namespace, so a deployment without the plugin shows no trace of it.
+
+## Provide the key without the GUI
 
 The plugin requires a key. It resolves one in this order:
 
@@ -99,6 +116,10 @@ or set it in the plugin's config in the profile's patch layer:
   config:
     apiKey: '...'             # a secret; prefer apiKeyEnv so no key enters a config file
 ```
+
+> If the profile patch is still the shipped default, it contains a bare `[]`. Replace that
+> `[]` with your entries — appending a `- id:` item after it makes the file two YAML
+> documents and the harness refuses to parse the overlay.
 
 A missing key fails the search with `WEB_PROVIDER_CREDENTIAL_MISSING` and a message
 naming the reference that was consulted — it never silently returns zero results.
@@ -159,6 +180,11 @@ dsh --profile web --dump-config | grep -A4 'id: web$'
   translation. It uses the native `fetch` client and does **not** go through `ctx.llm`.
 - `index.js` — the Cordis plugin: `name`, `inject: ['web']`, the `Config` schema, and
   `apply()`, which registers the provider into the seam.
+- `client/client.js` — the browser half, declared as `dsh.client` and served by the host
+  under `/plugins`. Hand-authored against the loader's client-bundle envelope, so it
+  needs no build step and requires only the platform `react`. Every read and write goes
+  through the documented Remote namespaces (`settings.describe` / `settings.mutate` /
+  `credentials.describe` / `credentials.set`).
 - `cordis.patch.yml` — the bundle patch that mounts the plugin and selects it.
 
 Two details worth knowing if you fork it:
