@@ -1,0 +1,29 @@
+# ============================================================================
+# dsh-web-search-doubao — DeepSeek Harness bundle patch
+#
+# Inserts two rows:
+#
+#  1. web-search-doubao — this package's own row. Mounting it runs `apply()`,
+#     which registers the Doubao-backed WebSearchProvider with the `ctx.web`
+#     seam. The provider registers INTO the seam; it does not own the `web` key.
+#
+#  2. web — a patch of the seam row that selects this provider by id.
+#
+# A row patch REPLACES the targeted row's whole `config`, so the seam's other
+# setting (`fetchProvider`) is restated here. Dropping it would silently unset
+# the fetch provider and break web_fetch.
+#
+# To keep the default DeepSeek search instead, delete the `- id: web` block
+# below: the provider stays registered and selectable, but unused. To switch
+# back at runtime, set `searchProvider: deepseek-official` on the `web` row in
+# your profile's own patch layer, which is applied after every bundle layer.
+# ============================================================================
+
+- insert:
+    - id: web-search-doubao
+      name: 'dsh-web-search-doubao'
+
+- id: web
+  config:
+    searchProvider: doubao
+    fetchProvider: http
